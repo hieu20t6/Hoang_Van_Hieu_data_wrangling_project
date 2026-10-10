@@ -1,4 +1,4 @@
-with each_transaction as(
+with transaction_analysis as(
 	select 
 		*,
 		case 
