@@ -1,3 +1,5 @@
+-- merge 2 table payment_report and product
+
 create table silver.payment_enriched as 
 select 
 	pr.*,
@@ -7,17 +9,23 @@ from bronze.payment_report pr
 left join bronze.product p 
 on pr.product_id  = p.product_id 
 
+
+-- check column missing data
+
 select
-	COUNT(*) - COUNT(report_month) AS missing_month,
-	COUNT(*) - COUNT(payment_group) as missing_payment,
-    COUNT(*) - COUNT(product_id) AS missing_product_id,
+	count(*) - count(report_month) AS missing_month,
+	count(*) - count(payment_group) as missing_payment,
+    count(*) - count(product_id) AS missing_product_id,
     count(*) - count(source_id) as missing_source,
-    COUNT(*) - COUNT(volume) AS missing_volume,
-    COUNT(*) - COUNT(category) AS missing_category,
+    count(*) - count(volume) AS missing_volume,
+    count(*) - count(category) AS missing_category,
     count(*) - count(team_own) as missing_team_oown
 from silver.payment_enriched 
 
-with dulica as(
+
+-- check duplicate data
+
+with duplica as(
 select 
 	*,
 	row_number() over(
@@ -26,21 +34,30 @@ select
 from silver.payment_enriched 
 )
 select * 
-from dulica
+from duplica
 where "number" > 1
  
+
+-- replace column data type report_month -> DATE
 
 ALTER TABLE silver.payment_enriched
 ALTER COLUMN report_month TYPE DATE 
 USING TO_DATE(report_month || '-01', 'YYYY-MM-DD')
 
+
+-- check value volume > 0
+
 select volume 
 from silver.payment_enriched
 where volume < 0
 
-select *
-from silver.payment_enriched 
+
+-- drop column 
 
 ALTER TABLE silver.payment_enriched 
 DROP column ingestion_at;
+
+
+select *
+from silver.payment_enriched 
 

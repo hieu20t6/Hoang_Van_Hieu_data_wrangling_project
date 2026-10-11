@@ -1,3 +1,6 @@
+-- Define type of transactions (‘transaction_type’) for each row, given
+-- Of each transaction type (excluding invalid transactions): find the number of transactions, volume, senders and receivers
+
 with transaction_analysis as(
 	select 
 		*,
